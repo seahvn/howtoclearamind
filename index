@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Flipbook</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/dearflip@2.3.0/dist/dflip.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/dearflip@2.3.0/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dearflip@2.3.0/dist/dflip.min.js"></script>
+</head>
+<body>
+  <h1>My Photo Book</h1>
+
+  <!-- Flipbook Viewer -->
+  <div class="dflip-book" data-book="photobook.pdf" data-height="600"></div>
+</body>
+</html>
