@@ -2,27 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>My Flipbook</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/dearflip@2.3.0/dist/dflip.min.css" />
+  <title>Simple PDF Test</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin: 2em; }
+    iframe { width: 80vw; height: 80vh; border: none; }
+  </style>
 </head>
 <body>
-
-  <h1>My Flipbook</h1>
-
-  <div class="dflip-book" data-book="book.pdf" data-height="600"></div>
-
-  <script src="https://cdn.jsdelivr.net/npm/dearflip@2.3.0/dist/jquery.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/dearflip@2.3.0/dist/dflip.min.js"></script>
-
-  <script>
-    window.addEventListener('load', function () {
-      if (typeof DFLIP !== 'undefined') {
-        DFLIP.parse();
-      } else {
-        console.error('DearFlip library failed to load');
-      }
-    });
-  </script>
-
+  <h1>Simple PDF Embed Test</h1>
+  <iframe src="book.pdf"></iframe>
 </body>
 </html>
