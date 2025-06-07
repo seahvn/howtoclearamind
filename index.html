@@ -2,151 +2,95 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>PDF Flip Viewer with Animation</title>
+<title>Flipbook with Turn.js + pdf.js</title>
+
 <style>
   body {
-    background: #f0f0f0;
     font-family: sans-serif;
-    text-align: center;
-    padding: 2em;
+    background: #f7f7f7;
+    margin: 20px;
+    display: flex;
+    justify-content: center;
   }
-  #pdf-container {
-    width: 600px;
+  #flipbook {
+    width: 800px;
+    height: 600px;
     margin: auto;
-    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     background: white;
-    border-radius: 8px;
-    overflow: hidden;
   }
-  canvas {
-    width: 100%;
-    /* Prepare for 3D rotation */
-    transform-style: preserve-3d;
-    backface-visibility: hidden;
-  }
-  /* Flip animation */
-  .flip-next {
-    animation: flipNext 0.6s forwards;
-  }
-  .flip-prev {
-    animation: flipPrev 0.6s forwards;
-  }
-  @keyframes flipNext {
-    0% {
-      transform: rotateY(0deg);
-    }
-    50% {
-      transform: rotateY(-90deg);
-    }
-    100% {
-      transform: rotateY(0deg);
-    }
-  }
-  @keyframes flipPrev {
-    0% {
-      transform: rotateY(0deg);
-    }
-    50% {
-      transform: rotateY(90deg);
-    }
-    100% {
-      transform: rotateY(0deg);
-    }
-  }
-  button {
-    margin: 1em;
-    padding: 0.5em 1em;
-    font-size: 1em;
-    cursor: pointer;
+  .page {
+    width: 400px;
+    height: 600px;
   }
 </style>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Turn.js -->
+<script src="https://cdn.jsdelivr.net/npm/turn.js@4/turn.min.js"></script>
+
+<!-- pdf.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.7.107/pdf.min.js"></script>
+
 </head>
 <body>
 
-<h1>PDF Flip Viewer with Animation</h1>
+<div id="flipbook"></div>
 
-<div id="pdf-container">
-  <canvas id="pdf-render"></canvas>
-</div>
-<button id="prev">Previous</button>
-<button id="next">Next</button>
-
-<script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
 <script>
-  const url = 'book.pdf'; // your PDF file path
-  let pdfDoc = null,
-      pageNum = 1,
-      pageIsRendering = false,
-      pageNumIsPending = null;
+  const url = 'book.pdf';
 
-  const scale = 1.2,
-        canvas = document.getElementById('pdf-render'),
-        ctx = canvas.getContext('2d');
+  const flipbook = $('#flipbook');
 
-  // Render the page
-  function renderPage(num) {
-    pageIsRendering = true;
+  // Initialize Turn.js flipbook
+  flipbook.turn({
+    width: 800,
+    height: 600,
+    autoCenter: true,
+    elevation: 50,
+    gradients: true,
+    duration: 1000,
+  });
 
-    pdfDoc.getPage(num).then(page => {
-      const viewport = page.getViewport({ scale });
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
+  // Load PDF with pdf.js
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.7.107/pdf.worker.min.js';
 
-      const renderCtx = {
-        canvasContext: ctx,
-        viewport
-      };
+  pdfjsLib.getDocument(url).promise.then(pdf => {
+    const numPages = pdf.numPages;
 
-      page.render(renderCtx).promise.then(() => {
-        pageIsRendering = false;
+    // Add blank pages for Turn.js: even number required
+    let totalPages = numPages;
+    if (numPages % 2 !== 0) totalPages++;
 
-        if (pageNumIsPending !== null) {
-          renderPage(pageNumIsPending);
-          pageNumIsPending = null;
-        }
+    for (let i = 1; i <= totalPages; i++) {
+      flipbook.turn('addPage', $('<div />', { class: 'page' })[0]);
+    }
+
+    // Render each PDF page into corresponding Turn.js page
+    for (let i = 1; i <= numPages; i++) {
+      pdf.getPage(i).then(page => {
+        const viewport = page.getViewport({ scale: 1.5 });
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+
+        const renderContext = {
+          canvasContext: canvas.getContext('2d'),
+          viewport: viewport,
+        };
+
+        page.render(renderContext).promise.then(() => {
+          // Put canvas inside the right page div (note: Turn.js pages start at 1)
+          const pageDiv = flipbook.turn('pageElement', i);
+          pageDiv.innerHTML = '';
+          pageDiv.appendChild(canvas);
+        });
       });
-    });
-  }
-
-  // Handle flip animation class toggle and rendering
-  function flipPage(direction) {
-    if (pageIsRendering) return;
-
-    // Add flip animation class
-    const animClass = direction === 'next' ? 'flip-next' : 'flip-prev';
-    canvas.classList.add(animClass);
-
-    // After half animation (300ms), render the new page
-    setTimeout(() => {
-      if (direction === 'next' && pageNum < pdfDoc.numPages) {
-        pageNum++;
-      } else if (direction === 'prev' && pageNum > 1) {
-        pageNum--;
-      }
-      renderPage(pageNum);
-    }, 300);
-
-    // Remove animation class after full animation (600ms)
-    setTimeout(() => {
-      canvas.classList.remove(animClass);
-    }, 600);
-  }
-
-  // Event listeners for buttons
-  document.getElementById('prev').addEventListener('click', () => {
-    if (pageNum <= 1) return;
-    flipPage('prev');
-  });
-
-  document.getElementById('next').addEventListener('click', () => {
-    if (pageNum >= pdfDoc.numPages) return;
-    flipPage('next');
-  });
-
-  // Load PDF document
-  pdfjsLib.getDocument(url).promise.then(pdfDoc_ => {
-    pdfDoc = pdfDoc_;
-    renderPage(pageNum);
+    }
   });
 </script>
 
