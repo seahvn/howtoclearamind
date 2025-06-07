@@ -1,23 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Photo Flipbook</title>
+  <meta charset="UTF-8" />
+  <title>My Flipbook</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/dearflip@2.3.0/dist/dflip.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/dearflip@2.3.0/dist/jquery.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/dearflip@2.3.0/dist/dflip.min.js"></script>
 </head>
 <body>
 
-  <h1>My Photo Book</h1>
+  <h1>My Flipbook</h1>
 
   <div class="dflip-book" data-book="book.pdf" data-height="600"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/dearflip@2.3.0/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dearflip@2.3.0/dist/dflip.min.js"></script>
+
   <script>
-    // Force initialization
     window.addEventListener('load', function () {
       if (typeof DFLIP === 'undefined') {
-        console.error('DearFlip not loaded!');
+        console.error('DearFlip library not loaded');
       } else {
         DFLIP.parse();
       }
