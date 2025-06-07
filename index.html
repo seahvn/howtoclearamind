@@ -1,15 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Simple PDF Test</title>
-  <style>
-    body { font-family: sans-serif; text-align: center; margin: 2em; }
-    iframe { width: 80vw; height: 80vh; border: none; }
-  </style>
+<meta charset="UTF-8" />
+<title>PDF Flip Viewer with Animation</title>
+<style>
+  body {
+    background: #f0f0f0;
+    font-family: sans-serif;
+    text-align: center;
+    padding: 2em;
+  }
+  #pdf-container {
+    width: 600px;
+    margin: auto;
+    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  canvas {
+    width: 100%;
+    /* Prepare for 3D rotation */
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+  }
+  /* Flip animation */
+  .flip-next {
+    animation: flipNext 0.6s forwards;
+  }
+  .flip-prev {
+    animation: flipPrev 0.6s forwards;
+  }
+  @keyframes flipNext {
+    0% {
+      transform: rotateY(0deg);
+    }
+    50% {
+      transform: rotateY(-90deg);
+    }
+    100% {
+      transform: rotateY(0deg);
+    }
+  }
+  @keyframes flipPrev {
+    0% {
+      transform: rotateY(0deg);
+    }
+    50% {
+      transform: rotateY(90deg);
+    }
+    100% {
+      transform: rotateY(0deg);
+    }
+  }
+  button {
+    margin: 1em;
+    padding: 0.5em 1em;
+    font-size: 1em;
+    cursor: pointer;
+  }
+</style>
 </head>
 <body>
-  <h1>Simple PDF Embed Test</h1>
-  <iframe src="book.pdf"></iframe>
+
+<h1>PDF Flip Viewer with Animation</h1>
+
+<div id="pdf-container">
+  <canvas id="pdf-render"></canvas>
+</div>
+<button id="prev">Previous</button>
+<button id="next">Next</button>
+
+<script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
+<script>
+  const url = 'book.pdf'; // your PDF file path
+  let pdfDoc = null,
+      pageNum = 1,
+      pageIsRendering = false,
+      pageNumIsPending = null;
+
+  const scale = 1.2,
+        canvas = document.getElementById('pdf-render'),
+        ctx = canvas.getContext('2d');
+
+  // Render the page
+  function renderPage(num) {
+    pageIsRendering = true;
+
+    pdfDoc.getPage(num).then(page => {
+      const viewport = page.getViewport({ scale });
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+
+      const renderCtx = {
+        canvasContext: ctx,
+        viewport
+      };
+
+      page.render(renderCtx).promise.then(() => {
+        pageIsRendering = false;
+
+        if (pageNumIsPending !== null) {
+          renderPage(pageNumIsPending);
+          pageNumIsPending = null;
+        }
+      });
+    });
+  }
+
+  // Handle flip animation class toggle and rendering
+  function flipPage(direction) {
+    if (pageIsRendering) return;
+
+    // Add flip animation class
+    const animClass = direction === 'next' ? 'flip-next' : 'flip-prev';
+    canvas.classList.add(animClass);
+
+    // After half animation (300ms), render the new page
+    setTimeout(() => {
+      if (direction === 'next' && pageNum < pdfDoc.numPages) {
+        pageNum++;
+      } else if (direction === 'prev' && pageNum > 1) {
+        pageNum--;
+      }
+      renderPage(pageNum);
+    }, 300);
+
+    // Remove animation class after full animation (600ms)
+    setTimeout(() => {
+      canvas.classList.remove(animClass);
+    }, 600);
+  }
+
+  // Event listeners for buttons
+  document.getElementById('prev').addEventListener('click', () => {
+    if (pageNum <= 1) return;
+    flipPage('prev');
+  });
+
+  document.getElementById('next').addEventListener('click', () => {
+    if (pageNum >= pdfDoc.numPages) return;
+    flipPage('next');
+  });
+
+  // Load PDF document
+  pdfjsLib.getDocument(url).promise.then(pdfDoc_ => {
+    pdfDoc = pdfDoc_;
+    renderPage(pageNum);
+  });
+</script>
+
 </body>
 </html>
