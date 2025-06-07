@@ -12,14 +12,14 @@
   <div class="dflip-book" data-book="book.pdf" data-height="600"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/dearflip@2.3.0/dist/jquery.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/dearflip@2.2.0/dist/dflip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dearflip@2.3.0/dist/dflip.min.js"></script>
 
   <script>
     window.addEventListener('load', function () {
-      if (typeof DFLIP === 'undefined') {
-        console.error('DearFlip library not loaded');
-      } else {
+      if (typeof DFLIP !== 'undefined') {
         DFLIP.parse();
+      } else {
+        console.error('DearFlip library failed to load');
       }
     });
   </script>
