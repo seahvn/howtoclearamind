@@ -1,98 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>Flipbook with Turn.js + pdf.js</title>
-
-<style>
-  body {
-    font-family: sans-serif;
-    background: #f7f7f7;
-    margin: 20px;
-    display: flex;
-    justify-content: center;
-  }
-  #flipbook {
-    width: 800px;
-    height: 600px;
-    margin: auto;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    background: white;
-  }
-  .page {
-    width: 400px;
-    height: 600px;
-  }
-</style>
-
-<!-- jQuery -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<!-- Turn.js -->
-<script src="https://cdn.jsdelivr.net/npm/turn.js@4/turn.min.js"></script>
-
-<!-- pdf.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.7.107/pdf.min.js"></script>
-
+  <meta charset="UTF-8" />
+  <title>My Flipbook</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/dearpdf@1.0.5/dist/dearpdf.min.css" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #111;
+    }
+    #dearpdf-container {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
 </head>
 <body>
 
-<div id="flipbook"></div>
+  <div id="dearpdf-container">
+    <dearflip 
+      mode="3d" 
+      pdf="book.pdf"
+      backgroundcolor="#111"
+      style="height: 100%; width: 100%;">
+    </dearflip>
+  </div>
 
-<script>
-  const url = 'book.pdf';
-
-  const flipbook = $('#flipbook');
-
-  // Initialize Turn.js flipbook
-  flipbook.turn({
-    width: 800,
-    height: 600,
-    autoCenter: true,
-    elevation: 50,
-    gradients: true,
-    duration: 1000,
-  });
-
-  // Load PDF with pdf.js
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.7.107/pdf.worker.min.js';
-
-  pdfjsLib.getDocument(url).promise.then(pdf => {
-    const numPages = pdf.numPages;
-
-    // Add blank pages for Turn.js: even number required
-    let totalPages = numPages;
-    if (numPages % 2 !== 0) totalPages++;
-
-    for (let i = 1; i <= totalPages; i++) {
-      flipbook.turn('addPage', $('<div />', { class: 'page' })[0]);
-    }
-
-    // Render each PDF page into corresponding Turn.js page
-    for (let i = 1; i <= numPages; i++) {
-      pdf.getPage(i).then(page => {
-        const viewport = page.getViewport({ scale: 1.5 });
-        const canvas = document.createElement('canvas');
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        canvas.style.width = '100%';
-        canvas.style.height = '100%';
-
-        const renderContext = {
-          canvasContext: canvas.getContext('2d'),
-          viewport: viewport,
-        };
-
-        page.render(renderContext).promise.then(() => {
-          // Put canvas inside the right page div (note: Turn.js pages start at 1)
-          const pageDiv = flipbook.turn('pageElement', i);
-          pageDiv.innerHTML = '';
-          pageDiv.appendChild(canvas);
-        });
-      });
-    }
-  });
-</script>
-
+  <script src="https://cdn.jsdelivr.net/npm/dearpdf@1.0.5/dist/dearpdf.min.js"></script>
 </body>
 </html>
