@@ -8,9 +8,8 @@
   <script src="https://cdn.jsdelivr.net/npm/dearflip@2.3.0/dist/dflip.min.js"></script>
 </head>
 <body>
-  <h1>searching for seahaven</h1>
+  <h1>My Photo Book</h1>
 
-  <!-- Flipbook Viewer -->
   <div class="dflip-book" data-book="forflip_compressed_compressed.pdf" data-height="600"></div>
 </body>
 </html>
